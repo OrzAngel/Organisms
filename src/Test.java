@@ -9,10 +9,14 @@ public class Test {
 		OrganismsGameInterface og = new OrganismsGameImp();
 
 		
-		Player p =new RandomPlayer();
+		Player p = new RandomPlayer();
 		p.register(game, 555);
+		
+		Player h = new PlayerHuman();
+		h.register(game, 554);
 
 		pl.add(p);
+		pl.add(h);
 		og.initialize(game, 0.001, 0.002, pl);
 		og.playGame();
 		
