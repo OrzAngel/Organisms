@@ -26,14 +26,14 @@ public class PlayerHuman implements Player {
 		display(food, neighbors, foodleft, energyleft);
 
 		int d = -1;
-
+		
 		while (d < 0 || d > 5) {
-			System.out.println("Select a move by input the index before it");
+			System.out.println("Select a move by entering the index before it");
 			System.out.printf("0: Stay put\n1: move West\n2: move East\n3: move North\n4: move South\n5: Reproduce\n");
 			try {
 				d = input.nextInt();
 			} catch (Exception e){
-				
+				input.nextLine();
 			}
 		}
 
@@ -41,12 +41,12 @@ public class PlayerHuman implements Player {
 		case Constants.REPRODUCE:
 			
 			while (d < 1 || d > 4) {
-				System.out.println("Select a postion to put the child by input the index before it");
+				System.out.println("Select a postion to put the child by entering the index before it");
 				System.out.printf("1: West\n2: East\n3: North\n4: South\n");
 				try {
 					d = input.nextInt();
 				} catch (Exception e){
-					
+					input.nextLine();
 				}
 			}
 			return new Move(Constants.REPRODUCE, d, key);
