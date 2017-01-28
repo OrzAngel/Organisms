@@ -16,8 +16,11 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 	private Cell[][] grid;
 	private HashMap<Player,Integer> organisms = new HashMap<>();
 	private HashMap<Player,Boolean> movable = new HashMap<>();
-
+	private ArrayList<Class<? extends Player>> brains = new ArrayList<>();
+	private ArrayList<PlayerRoundData> results = new ArrayList<>();
+	
 	private boolean flag;
+	PlayerRoundDataImp temp;
 
 	@Override
 	public void initialize(GameConfig game, double p, double q, ArrayList<Player> players) {
@@ -37,12 +40,29 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 			}
 
 		int[] coor;
+		int id = 0;
 		int initEnergy = Math.min(INIT_ENERGY, game.M());
 		for (Player player : players) {
 			coor = spawn.remove(rand.nextInt(spawn.size()));
 			grid[coor[0]][coor[1]].moveIn(player);
 			organisms.put(player, initEnergy);
 			movable.put(player,true);
+			
+			Class<? extends Player> cl = player.getClass();
+			int i = brains.indexOf(cl);
+			if (i >= 0) {
+				
+				temp = (PlayerRoundDataImp)results.get(i);
+				temp.setCount(1);
+				temp.setEnergy(initEnergy);
+
+			} else {
+				brains.add(cl);
+				results.add(new PlayerRoundDataImp(id++,initEnergy));
+			}
+
+			
+			
 		}
 
 		flag = true;
@@ -59,18 +79,13 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 		int x,y;
 
 		int round;
-		
-		Scanner s = new Scanner(System.in);
-		
+				
 		for (round = 0; round < MAX_ROUND; round++){
 			
 			if (organisms.keySet().size() == 0) {
 				break;
 			}
-//			
-//			print();
-//			s.nextLine();
-			
+						
 			for (int i = 0 ; i < BOUND ; i++)
 				for (int j = 0 ; j < BOUND ; j++) {
 					grid[i][j].reproduceFood();
@@ -83,8 +98,13 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 					if (player == null || movable.get(player) != flag) {
 						continue;
 					}
-
+					
+					temp = (PlayerRoundDataImp) results.get(brains.indexOf(player.getClass()));
+					
 					int energy = organisms.get(player);
+					
+					temp.setEnergy(-energy);
+					
 					if (energy <= game.M() - game.u() && grid[i][j].eatFood()) {
 						energy += game.u();
 					}
@@ -114,6 +134,10 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 									Player child = player.getClass().getConstructor().newInstance();
 									child.register(game, move.key());
 									grid[y][x].moveIn(child);
+									
+									temp.setEnergy(energy);
+									temp.setCount(1);
+									
 									organisms.put(child, energy);
 									movable.put(child, !flag);
 								} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -154,9 +178,12 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 
 					if (energy <= 0) {
 						grid[i][j].moveOut();
+						temp.setCount(-1);
 						organisms.remove(player);
 						movable.remove(player);
+						
 					} else {
+						temp.setEnergy(energy);
 						organisms.put(player, energy);
 						movable.put(player, !flag);
 					}
@@ -165,18 +192,18 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 			flag = !flag;
 			
 		}
-		System.out.println(round);
-		return false;
+//		System.out.println(round);
+		return true;
 	}
 
 	@Override
 	public ArrayList<PlayerRoundData> getResults() {
 		// TODO Auto-generated method stub
-		return null;
+		return results;
 	}
 
-	private void print() {
-		
+	public void print() {
+				
 		System.out.println("==================================================");
 		for (int i = 0 ; i < BOUND ; i++) {
 			for (int j = 0; j < BOUND ; j++) {
@@ -184,9 +211,16 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 			}
 			System.out.println();
 		}
-			
+	}
+	
+	public boolean check(){
+		int count = 0;
+		for (int i = 0 ; i < BOUND ; i++) 
+			for (int j = 0; j < BOUND ; j++) 
+				count += grid[i][j].getOrganism() == null? 0 : 1;
 		
 		
+		return count == results.get(0).getCount();
 	}
 	
 }
