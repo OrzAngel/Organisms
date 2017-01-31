@@ -1,16 +1,22 @@
 import java.util.Scanner;
-
+/**
+ * represent a human player, prompt the user to make a decision via command line
+ * @author CJC
+ *
+ */
 public class PlayerHuman implements Player {
 
-	private GameConfig game;
-	private int key;
+	@SuppressWarnings("unused")
+	private static GameConfig game;
 	private static final String name = "Terran";
-	private Scanner input = new Scanner (System.in);
+	private static Scanner input = new Scanner (System.in);
+
+	private int key;
 
 	@Override
 	public void register(GameConfig game, int key) {
 		// TODO Auto-generated method stub
-		this.game = game;
+		PlayerHuman.game = game;
 		this.key = key;
 	}
 
@@ -37,8 +43,7 @@ public class PlayerHuman implements Player {
 			}
 		}
 
-		switch(d) {
-		case Constants.REPRODUCE:
+		if (d == Constants.REPRODUCE) {
 			
 			while (d < 1 || d > 4) {
 				System.out.println("Select a postion to put the child by entering the index before it");
@@ -49,16 +54,21 @@ public class PlayerHuman implements Player {
 					input.nextLine();
 				}
 			}
+			
 			return new Move(Constants.REPRODUCE, d, key);
-
-		default:
+		} else {
 
 			return new Move(d);
-
 		}
-
 	}
 
+	/**
+	 * print the information from the OrganismGame on the screen 
+	 * @param food a five-element array that indicates whether any food is in adjacent squares
+	 * @param neighbors a five-element array that holds the details for any organism in an adjacent square. -1 is no organism present, any value >= 0 if organism present
+	 * @param foodleft how much food is left on the current square
+	 * @param energyleft the organism's remaining energy
+	 */
 	private void display(boolean[] food, int[] neighbors, int foodleft, int energyleft) {
 
 		System.out.printf("Food left: %d Energy left: %d\n",foodleft,energyleft);
