@@ -1,18 +1,34 @@
-
+/**
+ * My simple implementation of the PlayerRoundData interface
+ * @author CJC
+ *
+ */
 public class PlayerRoundDataImp implements PlayerRoundData {
 	
 	private int id,energy,count;
 	
-	public PlayerRoundDataImp(int id,int energy) {
+	/**
+	 * constructor
+	 * @param id the id assigned to this kind of player
+	 */
+	public PlayerRoundDataImp(int id) {
 		this.id = id;
-		this.energy = energy;
-		count = 1;
+		energy = 0;
+		count = 0;
 	}
 
+	/**
+	 * update energy
+	 * @param energy - the difference
+	 */
 	public void setEnergy(int energy) {
 		this.energy += energy;
 	}
 
+	/**
+	 * update count
+	 * @param count - the difference
+	 */
 	public void setCount(int count) {
 		this.count += count;
 	}

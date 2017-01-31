@@ -18,23 +18,17 @@ public class Test {
 		//		pl.add(h);
 
 		OrganismsGameImp og;
-		int k = 0;
-		do {
-			og = new OrganismsGameImp();
-			og.initialize(game, 0.1, 0.2, pl);
-			og.playGame();
-		} while (k++ < 20 && og.check());	
 
-		if (!og.check()) {
-			
-			og.print();
-			
-			ArrayList<PlayerRoundData> results = og.getResults();
+		og = new OrganismsGameImp();
+		og.initialize(game, 0.1, 0.2, pl);
+		og.playGame();
 
-			for (PlayerRoundData r : results) {
-				System.out.printf("Brain id: %d, count left: %d, energy left: %d\n",r.getPlayerId(),r.getCount(),r.getEnergy());
-			}
+		ArrayList<PlayerRoundData> results = og.getResults();
+
+		for (PlayerRoundData r : results) {
+			System.out.printf("Brain id: %d, count left: %d, energy left: %d\n",r.getPlayerId(),r.getCount(),r.getEnergy());
 		}
+
 
 	}
 
