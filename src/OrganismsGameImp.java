@@ -173,12 +173,13 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 					}
 				} 
 			
+//			print();
 			flag = !flag;
 		}
 		System.out.println(round);
 		print();
 
-		return check();
+		return true;
 	}
 
 	@Override
@@ -202,27 +203,14 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 	}
 
 	private void print() {
-				
+		Player player;		
 		System.out.println("==================================================");
 		for (int i = 0 ; i < BOUND ; i++) {
 			for (int j = 0; j < BOUND ; j++) {
-				System.out.printf("%2d %1s|",grid[i][j].getFood(), grid[i][j].getOrganism() == null? "" : "*");
+				player = grid[i][j].getOrganism();
+				System.out.printf("%2d %1s|",grid[i][j].getFood(), player == null? "" : player.name().charAt(0));
 			}
 			System.out.println();
 		}
 	}
-	
-	private boolean check(){
-		int count = 0;
-		for (int i = 0 ; i < BOUND ; i++) 
-			for (int j = 0; j < BOUND ; j++) 
-				count += grid[i][j].getOrganism() == null? 0 : 1;
-		
-		for (PlayerRoundData prd : results) {
-			count -= prd.getCount();
-		}
-		
-		return count == 0;
-	}
-	
 }
