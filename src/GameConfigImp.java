@@ -1,4 +1,8 @@
-
+/**
+ * Stores all the public parameters of the game
+ * @author CJC
+ *
+ */
 public class GameConfigImp implements GameConfig {
 	
 	int s,v,u,M,K;

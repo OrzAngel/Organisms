@@ -23,8 +23,8 @@ public class Test {
 		Player z = new PlayerAIv2();
 		z.register(game, 553);
 
-//		pl.add(d);
-//		pl.add(s);
+		pl.add(d);
+		pl.add(s);
 		pl.add(z);
 		//		pl.add(h);
 

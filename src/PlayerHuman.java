@@ -70,8 +70,8 @@ public class PlayerHuman implements Player {
 	 * @param energyleft the organism's remaining energy
 	 */
 	private void display(boolean[] food, int[] neighbors, int foodleft, int energyleft) {
-
-		System.out.printf("Food left: %d Energy left: %d\n",foodleft,energyleft);
+		System.out.printf("===============================\n");
+		System.out.printf("Food left: %2d Energy left: %4d\n",foodleft,energyleft);
 		System.out.println("Below is the environment around:");
 		System.out.printf("**|%1s%1s|**\n",food[Constants.NORTH] ? "F" : "", neighbors[Constants.NORTH] >= 0 ? "N" : "");
 		System.out.printf("%1s%1s| @|%1s%1s\n", food[Constants.WEST] ? "F" : "", neighbors[Constants.WEST] >= 0 ? "N" : "",food[Constants.EAST] ? "F" : "", neighbors[Constants.EAST] >= 0 ? "N" : "");

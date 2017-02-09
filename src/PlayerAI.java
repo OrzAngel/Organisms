@@ -6,7 +6,7 @@
 public class PlayerAI implements Player {
 	
 	private static GameConfig game = null;
-	private static String name = "SimpleAI";
+	private static String name = "Zergling";
 	// it is a really cooool idea here, that every organism shares the same overmind 
 	
 	private int key;

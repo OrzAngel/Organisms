@@ -18,19 +18,31 @@ public class PlayerRoundDataImp implements PlayerRoundData {
 	}
 
 	/**
+	 * make a copy of the input PlayerRoundData
+	 * @param prd - te prd to copy
+	 */
+	public PlayerRoundDataImp(PlayerRoundData prd) {
+		this.id = prd.getPlayerId();
+		this.energy = prd.getEnergy();
+		this.count = prd.getCount();
+	}
+	
+	/**
 	 * update energy
 	 * @param energy - the difference
 	 */
-	public void setEnergy(int energy) {
+	public PlayerRoundDataImp addEnergy(int energy) {
 		this.energy += energy;
+		return this;
 	}
 
 	/**
 	 * update count
 	 * @param count - the difference
 	 */
-	public void setCount(int count) {
+	public PlayerRoundDataImp addCount(int count) {
 		this.count += count;
+		return this;
 	}
 
 	@Override
@@ -51,6 +63,9 @@ public class PlayerRoundDataImp implements PlayerRoundData {
 		return count;
 	}
 	
-	
+	@Override
+	public String toString(){
+		return String.format("id : %2d, energy : %4d, count: %3d\n", id,energy,count);
+	}
 
 }
