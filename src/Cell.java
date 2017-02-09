@@ -11,7 +11,7 @@ public class Cell {
 	private static int K;
 	private static Random rand;
 	private int food;
-	private Player player;
+	private Organism organism;
 
 	/**
 	 * constructor initialize a cell with 0 food and no one living in
@@ -19,7 +19,7 @@ public class Cell {
 	 */
 	public Cell() {
 		food = 0;
-		player = null;
+		organism = null;
 	}
 
 
@@ -42,7 +42,7 @@ public class Cell {
 	 * reproduce food if no organism occupies this cell
 	 */
 	public void reproduceFood() {
-		if (player != null || food >= K) {
+		if (organism != null || food >= K) {
 			return;
 		}
 
@@ -87,24 +87,24 @@ public class Cell {
 	 * 
 	 * @return the organism living in this cell
 	 */
-	public Player getOrganism(){
-		return player;
+	public Organism getOrganism(){
+		return organism;
 	}
 	/**
 	 * empty this cell
 	 * @return the organism moving out
 	 */
-	public Player moveOut(){
-		Player p = player;
-		player = null;
-		return p; 
+	public Organism moveOut(){
+		Organism s = organism;
+		organism = null;
+		return s; 
 	}
 	
 	/**
 	 * assign this cell to one organism
-	 * @param player the organism moving in 
+	 * @param organism the organism moving in 
 	 */
-	public void moveIn(Player player) {
-		this.player = player;
+	public void moveIn(Organism organism) {
+		this.organism = organism;
 	}
 }

@@ -1,34 +1,45 @@
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
+/**
+ * This class simulate this game, In each time cycle 
+ * it will prompt organisms of different kind to make a move, and generate report for outside callers.
+ * @author CJC
+ *
+ */
 public class OrganismsGameImp implements OrganismsGameInterface {
-
 
 	private static final int MAX_ROUND = 5000;
 	private static final int INIT_ENERGY = 500;
 	private static final int BOUND = 10;
 
 	private GameConfig game;
-	private Cell[][] grid; // the game board 
-	private HashMap<Player,Integer> energies = new HashMap<>(); // map organism to its energy
-	private HashMap<Player,Boolean> movable = new HashMap<>();   // map organism to its moving status
-	private ArrayList<Class<? extends Player>> brains = new ArrayList<>(); // a list of different kind of brains
-	private ArrayList<PlayerRoundData> results = new ArrayList<>(); // data on index i is related to the kind of brain that on the same index in the brains list
+	private boolean flag; // if organism.flag() == flag, then the player has not yet moved in this turn
+	private int round; // track the number of rounds simulated
+	private boolean display;
 	
-	private boolean flag; // if movable.get(player) == flag, then the player has not moved in this turn
-
+	private Cell[][] grid; // the game board 
+	private ArrayList<PlayerRoundDataImp> results = new ArrayList<>();
+	// here I decide to use the PlayerRoundDataImp of my own. However the getResult still return the generic one
+	// its index is the same as the PlayerRoundData.id() on that index 
+	
+	public OrganismsGameImp() {
+		this(false);
+	}
+	
+	public OrganismsGameImp(boolean display) { 
+		this.display = display;
+	}
+	
 	@Override
 	public void initialize(GameConfig game, double p, double q, ArrayList<Player> players) {
 		// TODO Auto-generated method stub
 		this.game = game;
 
-		
 		// init & config the game board
 		grid = new Cell[BOUND][BOUND];
 		Cell.config(p, q, game.K());
- 
+
 		ArrayList<int[]> spawn = new ArrayList<>();
 		for (int i = 0 ; i < BOUND ; i ++)
 			for (int j = 0 ; j < BOUND ; j ++) {
@@ -40,175 +51,182 @@ public class OrganismsGameImp implements OrganismsGameInterface {
 		int[] coor;
 		int id = 0;
 		int initEnergy = Math.min(INIT_ENERGY, game.M());
+		flag = true;
+		round = 0;
 		for (Player player : players) {
 			coor = spawn.remove(rand.nextInt(spawn.size()));
-			grid[coor[0]][coor[1]].moveIn(player);
-			energies.put(player, initEnergy);
-			movable.put(player,true);
-			
-			Class<? extends Player> brainKind = player.getClass();
-			if (!brains.contains(brainKind)) {
-				brains.add(brainKind);
-				results.add(new PlayerRoundDataImp(id++));
-			}
 
+			Organism organism = new Organism(id++, player).setEnergy(initEnergy).setFlag(flag);
+			grid[coor[0]][coor[1]].moveIn(organism);
+
+			results.add(new PlayerRoundDataImp(id).addCount(1).addEnergy(initEnergy));
 		}
-
-		flag = true;
 	}
 
 	@Override
 	public boolean playGame() {
 		// TODO Auto-generated method stub
-
-		Player player;
+		//simulate one time cycle
+		
+		if (hasNextRound() == false) {
+			return false;
+		}
+		
+		Organism organism;
+		PlayerRoundDataImp prdi;
 		Move move;
 		boolean[] food = new boolean[5];
 		int[] neib = new int[5];
 		int x,y;
 
-		int round;
-				
-		for (round = 0; round < MAX_ROUND; round++){
-			
-			if (energies.keySet().size() == 0) {
-				// everything extinct
-				break;
+		for (int i = 0 ; i < BOUND ; i++)
+			for (int j = 0 ; j < BOUND ; j++) {
+				grid[i][j].reproduceFood();
 			}
-						
-			for (int i = 0 ; i < BOUND ; i++)
-				for (int j = 0 ; j < BOUND ; j++) {
-					grid[i][j].reproduceFood();
+
+		for (int i = 0 ; i < BOUND ; i++)
+			for (int j = 0 ; j < BOUND ; j++) {
+
+				organism = grid[i][j].getOrganism();
+				if (organism == null || organism.flag() != flag) {
+					continue;
+				}
+				
+				prdi = results.get(organism.id());
+				
+				int energy = organism.energy();
+				prdi.addEnergy(-energy);
+				
+				// eat if hungry
+				if (energy <= game.M() - game.u() && grid[i][j].eatFood()) {
+					energy += game.u();
 				}
 
-			for (int i = 0 ; i < BOUND ; i++)
-				for (int j = 0 ; j < BOUND ; j++) {
-					
-					player = grid[i][j].getOrganism();
-					if (player == null || movable.get(player) != flag) {
-						continue;
-					}
-										
-					int energy = energies.get(player);
-					
-					// eat if hungry
-					if (energy <= game.M() - game.u() && grid[i][j].eatFood()) {
-						energy += game.u();
-					}
+				// generate food[] & neighbor[]
+				for (int dir : Constants.DIRECTIONS) {
+					x = (j + Constants.CXTrans[dir] + BOUND) % BOUND;
+					y = (i + Constants.CYTrans[dir] + BOUND) % BOUND;
+					food[dir] = grid[y][x].getFood() > 0;
+					neib[dir] = grid[y][x].getOrganism() == null ? -1 : 1;
+				}
+				// prompt organism to make a move
+				move = organism.player().move(food, neib, grid[i][j].getFood(), energy);
 
-					// generate food[] & neighbor[]
-					for (int dir : Constants.DIRECTIONS) {
-						x = (j + Constants.CXTrans[dir] + BOUND) % BOUND;
-						y = (i + Constants.CYTrans[dir] + BOUND) % BOUND;
-						food[dir] = grid[y][x].getFood() > 0;
-						neib[dir] = grid[y][x].getOrganism() == null ? -1 : 1;
-					}
-					// prompt organism to make a move
-					move = player.move(food, neib, grid[i][j].getFood(), energy);
+				switch(move.type()){
+				case Constants.REPRODUCE:
 
-					switch(move.type()){
-					case Constants.REPRODUCE:
+					x = (j + Constants.CXTrans[move.childpos()] + BOUND) % BOUND;
+					y = (i + Constants.CYTrans[move.childpos()] + BOUND) % BOUND;
 
-						x = (j + Constants.CXTrans[move.childpos()] + BOUND) % BOUND;
-						y = (i + Constants.CYTrans[move.childpos()] + BOUND) % BOUND;
+					if (grid[y][x].getOrganism() == null) {
 
-						if (grid[y][x].getOrganism() == null) {
+						energy -= game.v();
+						energy /= 2;
+						if (energy > 0) {
+							try {
+								Organism child = new Organism(organism).setEnergy(energy).setFlag(!flag);
+								child.player().register(game, move.key());
+								grid[y][x].moveIn(child);
 
-							energy -= game.v();
-							energy /= 2;
-
-							if (energy > 0) {
-								try {
-									Player child = player.getClass().getConstructor().newInstance();
-									child.register(game, move.key());
-									grid[y][x].moveIn(child);
-	
-									energies.put(child, energy);
-									movable.put(child, !flag);
-								} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-										| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									return false;
-								}
-							}
-
-						} else {
-							// if the target cell is occupied
-							energy -= game.s();
-						}
-						
-						break;
-
-					case Constants.STAYPUT:
-
-						energy -= game.s();
-						break;
-
-					default:
-
-						x = (j + Constants.CXTrans[move.type()] + BOUND) % BOUND;
-						y = (i + Constants.CYTrans[move.type()] + BOUND) % BOUND;
-
-						if (grid[y][x].getOrganism() == null) {		
+								prdi.addCount(1).addEnergy(energy);
 							
-							energy -= game.v();
-							if (energy > 0) {
-								grid[y][x].moveIn(grid[i][j].moveOut());
+							} catch (InstantiationException | IllegalAccessException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								return false;
 							}
-						} else {							
-							// if the target cell is occupied
-							energy -= game.s();
 						}
-					}
 
-					// check if the organism survived in this time cycle
-					if (energy <= 0) {
-						grid[i][j].moveOut();
-						energies.remove(player);
-						movable.remove(player);
 					} else {
-						energies.put(player, energy);
-						movable.put(player, !flag);
+						// if the target cell is occupied
+						energy -= game.s();
 					}
-				} 
-			
-//			print();
-			flag = !flag;
-		}
-		System.out.println(round);
-		print();
 
-		return true;
+					break;
+
+				case Constants.STAYPUT:
+
+					energy -= game.s();
+					break;
+
+				default:
+
+					x = (j + Constants.CXTrans[move.type()] + BOUND) % BOUND;
+					y = (i + Constants.CYTrans[move.type()] + BOUND) % BOUND;
+
+					if (grid[y][x].getOrganism() == null) {		
+
+						energy -= game.v();
+						if (energy > 0) {
+							grid[y][x].moveIn(grid[i][j].moveOut());
+						}
+					} else {							
+						// if the target cell is occupied
+						energy -= game.s();
+					}
+				}
+
+				// check if the organism survived in this time cycle
+				if (energy <= 0) {
+					grid[i][j].moveOut();
+					prdi.addCount(-1);
+				} else {
+					organism.setEnergy(energy).setFlag(!flag);
+					prdi.addEnergy(energy);
+				}
+			}
+
+		flag = !flag;
+		if (display) {
+			System.out.println(round);
+			print();
+		}
+//		
+		// if MAX_ROUND is reached, no more next round
+		return hasNextRound();
 	}
 
 	@Override
 	public ArrayList<PlayerRoundData> getResults() {
-		// TODO Auto-generated method stub
-		Player player;
-		PlayerRoundDataImp prd;
 		
-		for (int i = 0 ; i < BOUND; i++) 
-			for (int j = 0 ; j < BOUND; j++) {
-				player = grid[i][j].getOrganism();
-				if (player == null) {
-					continue;
-				}
-				prd = (PlayerRoundDataImp) results.get(brains.indexOf(player.getClass()));
-				prd.setCount(1);
-				prd.setEnergy(energies.get(player));
-			}
+		ArrayList<PlayerRoundData> res = new ArrayList<>();
 		
-		return results;
+		for (PlayerRoundDataImp prdi : results){
+			res.add(new PlayerRoundDataImp(prdi));
+		}
+		
+		return res;
+	}
+	
+	/**
+	 * check whether the game ends			
+	 * @return true if the game is not end
+	 */
+	private boolean hasNextRound() {
+		
+		if (++round >= MAX_ROUND) {
+			return false;
+		}
+		
+		int sum = 0;
+		for (PlayerRoundData prd : results) {
+			sum += prd.getCount();
+		}
+		
+		return sum > 0;
+		
 	}
 
+	/**
+	 * print the board to the console
+	 */
 	private void print() {
-		Player player;		
+		Organism organism;		
 		System.out.println("==================================================");
 		for (int i = 0 ; i < BOUND ; i++) {
 			for (int j = 0; j < BOUND ; j++) {
-				player = grid[i][j].getOrganism();
-				System.out.printf("%2d %1s|",grid[i][j].getFood(), player == null? "" : player.name().charAt(0));
+				organism = grid[i][j].getOrganism();
+				System.out.printf("%2d %1s|",grid[i][j].getFood(), organism == null? "" : organism.player().name().charAt(0));
 			}
 			System.out.println();
 		}
