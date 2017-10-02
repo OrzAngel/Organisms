@@ -8,7 +8,7 @@ The AI player ranked 2nd in the class tournament!
 ________
 Overview
 	
-	This project simulate a organism game on a 10 X 10 board.
+	This project simulate an organism game on a 10 X 10 board.
 	Organisms of different kinds explore the board, consume food, reproduce themselves. 
 	
 ____________
