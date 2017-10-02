@@ -1,11 +1,16 @@
 <!-- readme.md -->
+# Organism
 
+Survive and Reproduce on the game board!
+
+The AI player ranked 2nd in the class tournament! 
 
 ________
 Overview
 	
 	This project simulate a organism game on a 10 X 10 board.
 	Organisms of different kinds explore the board, consume food, reproduce themselves. 
+	
 ____________
 Installation 
 
