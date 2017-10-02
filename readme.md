@@ -1,14 +1,16 @@
 <!-- readme.md -->
 
+
+________
 Overview
 	
 	This project simulate a organism game on a 10 X 10 board.
 	Organisms of different kinds explore the board, consume food, reproduce themselves. 
-
+____________
 Installation 
 
 	Run the GameLauncher.java in the ./src folder
-
+_______
 Classes
 	
 	* Organism
@@ -58,7 +60,7 @@ Classes
 				- First, food got blowed in and reproduced
 				- Second, when an organism is found, it will be forced to consume food if hugury and then asked to make a move.
 
-			- Assumptions about to rules
+			- Assumptions about the rules
 				1. the newly produced child organism is not able to move in this time cycle, regardless of its position.
 				2. if an organism wants to move without enough energy (but still enough energy for staying), it dies.
 				3. There is no food on the grid at start
